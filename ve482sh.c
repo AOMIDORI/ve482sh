@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <signal.h>
-#include <sys/dir.h>
+//#include <sys/dir.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <stdlib.h>
@@ -70,6 +70,7 @@ void Output2file(char *cm, int ifout){
 		dup2(fileno(output_file),STDOUT_FILENO);
 		fclose(output_file);
 		execvp(args[0],args);
+		perror("Error:");
 	}
 	else{
 		wait(NULL);
@@ -87,7 +88,7 @@ void Output2file(char *cm, int ifout){
  	char *program=strtok(cm, substring);
  	char *file=strtok(NULL,substring);
  	char *args[50];
-	int i=0,j=0;
+	int i=0;
 	if(file==NULL){
 		printf("bash: syntax error near unexpected token 'newline'\n");
 		//break;
@@ -117,6 +118,7 @@ void Output2file(char *cm, int ifout){
 		dup2(fileno(input_file),STDIN_FILENO);
 		fclose(input_file);
 		execvp(args[0],args);
+		perror("Error:");
 	}
 	else{
 		wait(NULL);
@@ -174,23 +176,14 @@ void Output2file(char *cm, int ifout){
 	}
 	return ch;
  }
- /*int checksecond(char *ch){
- 	int i,j=0;
- 	for(i=0;i<strlen(ch);i++){
- 		if(ch[i]=='"'){
- 			j=1;
- 			break;
- 		}
- 	}
- 	return j;
- }*/
+
 
  /*==================================================*
   *                      MAIN                         *
   *==================================================*/
 int main(){
 	char cmd[LINESIZE];
-	int i=0,j=0,p=0,size=0,b=0;
+	int i=0,j=0,b=0;
 	int cmdfull;
 	int n_quote;
 	while(strcmp(cmd, "exit")!=0){
@@ -200,9 +193,9 @@ int main(){
 			return 0;
 		}
 		cmdfull=0;
-		if(cmd[0]!='\n'&&cmd[0]!=0){
-			size=strlen(cmd);
-		}
+		//if(cmd[0]!='\n'&&cmd[0]!=0){
+		//	size=strlen(cmd);
+		//}
 		n_quote=0;
 //------------------------------------------------------
 //         Deal with quotes                  
@@ -298,7 +291,7 @@ int main(){
 		
 
 		char *cm[2];
-		char *substring="|";
+		//char *substring="|";
 		char *arglis[100];
 		char *arglis2[100];
 		cm[0]=strtok(cmd,"|");
@@ -372,6 +365,9 @@ int main(){
 					else{
 						result=chdir(getenv("HOME"));
 					}
+					if(result<0){
+						printf("cd: No such file or directory\n");
+					}
 				}
 				else{
 					pid_t pid;
@@ -382,6 +378,7 @@ int main(){
 					}
 					else if(pid==0){
 						execvp(arglis[0],arglis);
+						perror("Error");
 					}
 					else{
 						wait(NULL);
@@ -393,7 +390,7 @@ int main(){
 		else{
 			char *program1=cm[0], *program2=cm[1];
 			char *file1, *file2;
-			char *write_type1="w+", *write_type2="w+";
+			char *write_type2="w+";
 			int type1=0,type2=0;
 			file1=NULL;
 			file2=NULL;
@@ -476,7 +473,7 @@ int main(){
 					dup2(fd[1],STDOUT);
 					close(fd[0]);
 					if((execvp(arglis[0],arglis))<0){
-						perror("Execvp of command 1 failed");
+						perror("Error");
 						return 1;
 					}
 				}
@@ -485,7 +482,7 @@ int main(){
 					dup2(fd[1],STDOUT);
 					close(fd[0]);
 					if((execvp(arglis[0],arglis))<0){
-						perror("Execvp failed");
+						perror("Error");
 						return 1;
 					}
 				}
@@ -509,7 +506,7 @@ int main(){
 					dup2(fd[0],STDIN);
 					close(fd[1]);
 					if((execvp(arglis2[0],arglis2))<0){
-						perror("Execvp of command 2 failed");
+						perror("Error");
 						return 1;
 					}
 				}
@@ -518,7 +515,7 @@ int main(){
 					dup2(fd[0],STDIN);
 					close(fd[1]);
 					if((execvp(arglis2[0],arglis2))<0){
-						perror("Execvp of command 2 failed");
+						perror("Error");
 						return 1;
 					}
 				}
